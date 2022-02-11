@@ -65,7 +65,7 @@ di ;vuelve a deshabilitar innecesariamente los interrupciones (lo hizo al princi
 
 ld (direccion_memo_escribir_low_byte),hl ;direccion inicial memoria RAM a escribir
 ld (track_a_mover_cabezal),a ;track inicial a leer
-ld (cantidad_bytes_quedan_por_intentar_escribir),bc ;bytes totales a leer desde disco
+ld (cantidad_bytes_quedan_por_intentar_leer),bc ;bytes totales a leer desde disco
 
 ;ahora va a meter la configuracion del formato del disco en el comando READ DATA
 ;longitud de sector 1024 bytes
@@ -107,7 +107,7 @@ sub #14 ;quita 5.120bytes a la direccion de memoria a escribir en RAM
         ;es decir se ha leido un track entero y necesita posicionar en la siguiente zona acorde de RAM
       
 ld (direccion_memo_escribir_high_byte),a
-ld de,(cantidad_bytes_quedan_por_intentar_escribir) ;carga el numero de bytes que le quedan por leer del disco
+ld de,(cantidad_bytes_quedan_por_intentar_leer) ;carga el numero de bytes que le quedan por leer del disco
 ld a,e
 or d ;comprueba que hemos acabado de leer todos los datos
 jr nz,lee_datos_disco ;si no es asi sigue leyendo del disco
@@ -372,7 +372,7 @@ jr nz,manda_comando_READ_DATA ;si el FDC no esta preparado para recibir el coman
 ld hl,(direccion_memo_escribir_low_byte) ;recupera memoria RAM a escribir datos
 .l0228 equ $ + 1
 ld bc,#fb7e ;Main status register FDC. Read Only. 
-ld de,(cantidad_bytes_quedan_por_intentar_escribir) ;recupera numero de bytes que quedan por escribir en RAM
+ld de,(cantidad_bytes_quedan_por_intentar_leer) ;recupera numero de bytes que quedan por escribir en RAM
               ;recupera -5120bytes de cada vez que es lo que ocupa cada track
               
 
@@ -434,7 +434,7 @@ jr lee_datos_disco_espera_rqm ;en este salto al estar DE=#0000 (todos los datos 
 ;estamos en RESULT-PHASE (el FDC nos dice que resultado ha dado el comando READ DATA)
 
 .lee_status_registers ;lee los resultados devueltos por el FDC en los Status Registers
-ld (cantidad_bytes_restantes_escribir),de ;va guardando el contador de bytes cuando las lecturas son correctas
+ld (cantidad_bytes_restantes_leer),de ;va guardando el contador de bytes cuando las lecturas son correctas
 call guarda_status_registers ;leera los los status registers de READ DATA y los escribira en 
                              ;#0040-#0046
                              ;el valor que devuelve S0 es &40 (%01000000)
@@ -480,12 +480,12 @@ jr z,lee_sectores ;si hubo error no actualiza puntero de cantidad de bytes a esc
                   ;y vuelve a intentarlo.
 
 .todo_correcto
-ld de,(cantidad_bytes_restantes_escribir) ;si DE=#0000, en el ret de aqui abajo,
+ld de,(cantidad_bytes_restantes_leer) ;si DE=#0000, en el ret de aqui abajo,
                                           ;al volver a la rutina que llamo a esta subrutina
                                           ;la comprobacion de que se acabo la lectura se activara.
                                           ;apagara el motor de la disquetera y saltara al programa cargado.
 
-ld (cantidad_bytes_quedan_por_intentar_escribir),de ;actualiza contador de bytes a escribir y,
+ld (cantidad_bytes_quedan_por_intentar_leer),de ;actualiza contador de bytes a escribir y,
                                                     ;volvera a la rutina que llamo a esta subrutina
                                                     ;incrementara track del disco a leer
                                                     ;y volvera a esta rutina para leer el nuevo track.
@@ -620,11 +620,11 @@ db #00
 db #00 ;quitara #14 de la high byte de la direccion de ram a escribir
        ;es decir quita 5.120bytes a la direccion de memoria que es lo que ocupa un track entero
 
-.cantidad_bytes_quedan_por_intentar_escribir
+.cantidad_bytes_quedan_por_intentar_leer
 db #00
 db #00
 
-.cantidad_bytes_restantes_escribir
+.cantidad_bytes_restantes_leer
 db #00
 db #00
 .datos_colores ;datos de colores (16 colores mode 0)
