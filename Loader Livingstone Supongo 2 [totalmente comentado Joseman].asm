@@ -321,8 +321,9 @@ call termina_comando_SEEK ;el comando SEEK (y RECALIBRATE) necesita ser "termina
                           ;tambien comprobara que se "termino" correctamente
 
 inc hl ;incrementa puntero a #0041 (zona de ram donde se guardaron los STATUS REGISTERS)
-ld a,(hl) ;entiendo que esta leyendo el resultado del comando SENSE INTERRUPT STATUS
-          ;TP  Physical Track Number
+ld a,(hl) ;esta leyendo el segundo resultado devuelto por el comando SENSE INTERRUPT STATUS
+          ;el segundo resultado de este comando es PCN 
+          ;nos indica en que track se ha situado la cabeza lectora despues de acabar este comando.
 ld hl,track_a_mover_cabezal
 cp (hl) ;compara con el track al que le mando ir, si coincide, todo correcto.
         ;movimiento de cabezal correcto
