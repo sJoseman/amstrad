@@ -290,9 +290,10 @@ dec a
 nop
 jr nz,perdemos_tiempo
 
-jr guarda_status_registers
+jr guarda_status_registers ;el ret de la subrutina a la que llamamos
+                           ;nos devolvera a la que llamo a esta.
 
-
+;-------------------------------------------------------------------
 .mueve_cabezal_track_destino
 ld hl,track_fisico_fdd
 sub (hl) ;a= track al que ir, (hl) track anterior leido
