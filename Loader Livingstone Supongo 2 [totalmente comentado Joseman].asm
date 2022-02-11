@@ -187,7 +187,13 @@ ret
 pop bc ;recupera contador de comando + parametros
        ;en realidad en este loader nunca salta a esta zona
 
+
+;-----------------------------------------------------------------
 .guarda_status_registers
+;aqui almacena los resultados que devuelve el FDC despues de ejecutar los comandos
+;estos resultados se usan para diferentes formas dependiendo del comando
+;pero generalmente su uso es para comprobar que el comando se ejecuto correctamente por el FDC
+
 ld hl,#0040 ;direccion de memoria RAM donde escribira los status registers
 ld bc,#fb7e ;Main status register FDC. Read Only. 
 
