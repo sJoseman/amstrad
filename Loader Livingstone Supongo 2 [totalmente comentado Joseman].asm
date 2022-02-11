@@ -270,10 +270,10 @@ call espera_FDC_O_motor_RPM
 ld a,#0f ;para perder un tiempo determinado
 call bucle_pierde_tiempo
 ld bc,#fb7e ;Main status register FDC. Read Only. 
-.espera_FDC_listo ;l01c0
+.espera_FDC_listo
 in a,(c)
 bit 7,a ;bit 7 en el STATUS REGISTER 1.
-jr z,espera_FDC_listo ;l01c0 ;comprueba que el FDC esta listo para recibir o mandar datos
+jr z,espera_FDC_listo ;comprueba que el FDC esta listo para recibir o mandar datos
 
 ;por aqui el FDC esta listo para mandar o recibir datos
 ld hl,l02e3
