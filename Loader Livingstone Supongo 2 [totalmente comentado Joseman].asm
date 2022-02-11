@@ -256,7 +256,7 @@ ld a,#40
 jr espera_FDC_O_motor_RPM ;bucle de perdida de tiempo para que el motor alcance las revoluciones necesarias.
    ;aqui hace un jr para que el ret de espera_FDC_O_motor_rpm le lleve al call original
 
-.termina_comando_SEEK ;l01b2
+.termina_comando_SEEK
 ;los comandos RECALIBRATE y SEEK no devuelve bytes de resultado directamente
 ;es decir NO TIENEN "EXECUTION-PHASE" ni "RESULT-PHASE"
 ;en estes 2 casos, el programa debe esperar hasta que el Main Status Register
