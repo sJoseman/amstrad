@@ -1,5 +1,5 @@
 ;------------------------------------------------------------------------------------------------------
-;loader original livingstone supongo 2 DISCO (la que efectua la carga del menu de eleccion de fase)
+;loader original livingstone supongo 2 DISCO (el que efectua la carga del menu de eleccion de fase)
 ;Joseman febrero de 2022
 ;------------------------------------------------------------------------------------------------------
 
