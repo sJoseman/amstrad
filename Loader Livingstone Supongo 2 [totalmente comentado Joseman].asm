@@ -29,6 +29,39 @@
 
 ;FDC es el Floppy Disc Controller (NEC UPD765)
 ;FDD es el Floppy Disc Drive (disquetera de 3" simple cara, solo 1 cabezal)
+
+;Formato de disquet
+;Los disquets de cualquier formato (en este caso de 3") estan compuestos por tracks (pistas) y sectores
+;TRACKS
+;Pensad en lo que serian los tracks donde corren los atletas en las olimpiadas (cada corredor usa una track) 
+;los tracks, empiezan desde la parte exterior del disco y segun incrementas el numero de track
+;la cabeza se va desplazando hacia el interior del disquet, siendo el ultimo track la zona mas interior.
+;SECTORES
+;Todos los tracks estan divididos en sectores, estos sectores tienen un ancho (definido en comando READ DATA)
+;dichos sectores tienen una ID que es un numero hexadecimal.
+;Esta ID tambien se define con el comando READ DATA y se decide al formatear el disco.
+;Puede ser diferente entre tracks (de hecho muchas protecciones anticopia lo hacen) y se debe reconfigurar
+;el comando READ DATA con la nueva ID antes de intentar leer ese track.
+;el tamano del sector se decide tambien al formatear el disquet y se debe informar al FDC de dicho tamano
+
+;Esta flexibilidad de configuracion de ID y tamano lo usan numerosas protecciones anticopia
+;Al poder saltar a cualquier track y sector en cualquier momento con posibles tamanos diferentes de sectors y,
+;usar diferentes ID de sector en cada track hace que ciertas protecciones anticopia sean muy complicadas
+
+
+;En el formato de disco Standard de Amstrad CPC (que no el del livingstone supongo 2)
+;numero de tracks 40 (numerados del 0 a 39)
+;numero de sectores 9 (con ID de &c1 a &c9)
+;tamano de sector 512 bytes
+;512bytes * 9 sectores= 4.608 bytes por track
+;40 tracks * 4.608bytes= 184.320 bytes en total en disco (los famosos 180K por cara del disco)
+
+;---------------informacion curiosa acerca de protecciones anticopia puneteras----------------------------
+;sobre 1988 se descubrio que, tal como amstrad creo la circuiteria que maneja el FDC del Amstrad CPC
+;este consigue leer sectores de 8k de tamano PERO NO ESCRIBIRLOS, ya que,
+;la cabeza lectora no para a tiempo y sobreescribe algunos bytes del siguiente sector
+;mandando al traste la copia del disco, esta "feature" se aprovecho por el conocido SpeedLock 8k de la epoca
+;haciendo imposible el copiado de discos desde el propio CPC (se tenia que hacer desde PC o Atari ST)
 ;------------------------------------------------------------------------------------------------------------
 
 ;empecemos
@@ -143,7 +176,7 @@ ld bc,#fb7e ;Main Status Register del FDC
 
 ;ahora esperamos a que el FDC nos diga que esta listo para recibir o enviar datos
 
-esperando_RQM ;si el Data Register del FDC no esta preparado para enviar recibir datos, buclea
+.esperando_RQM ;si el Data Register del FDC no esta preparado para enviar recibir datos, buclea
               ;hasta que lo este.
 in a,(c)
 add a ;si el bit 7 esta a 1 se activa carry (como si carry cogiera el valor del bit 7)
@@ -151,7 +184,7 @@ add a ;si el bit 7 esta a 1 se activa carry (como si carry cogiera el valor del 
 jr nc,esperando_RQM ;espera a bit 7 =1, es decir a que el Data Register este preparado.
 
 add a ;ahora comprueba lo mismo con lo que era el bit 6 (ahora es el bit 7)
-      ;el bit 6 (ahora movido a bit 7) es DIO (DATA INPUT/OUTPUT)
+      ;el bit 6 (ahora movido a bit 7) y pasado a carry con el add,  es DIO (DATA INPUT/OUTPUT)
       ;Si 0 entonces transferencia es desde la CPU al DATA REGISTER
       ;Si 1 entonces la transferencia es desde el DATA REGISTER a la CPU
 jr c,FDC_to_CPU ;si bit 7=1 el FDC esta en transferencia direccion FDC -> CPU  
@@ -199,7 +232,7 @@ ld bc,#fb7e ;Main status register FDC. Read Only.
 
 .Sigue_leyendo_Status_Registers ;por aqui salta para escribir cada status register en memoria
 .espera_FDC_ready
-in a,(c) ;lee el MAIN STATUS REGISTER devuelto por el FDC.
+in a,(c) ;lee el MAIN STATUS REGISTER del FDC.
 bit 7,a ;bit 7 en el MAIN STATUS REGISTER.
 jr z,espera_FDC_ready ;sigue comprobando que el FDC esta listo para recibir o mandar datos
 
@@ -247,7 +280,7 @@ ld a,#01 ;parametro FDC para encender motor disquetera
 jr control_motor_FDD
 
 .apaga_motor_FDC ;por aqui saltara al acabar de leer todos los datos del disco y apagara la disquetera
-xor a ;parametro FDC para apagar motor disquetera
+xor a ;a=&00, parametro FDC para apagar motor disquetera
 
 .control_motor_FDD
 ld bc,#fa7e ;puerto de control del motor de la disquetera
@@ -256,6 +289,8 @@ ld a,#40
 jr espera_FDC_O_motor_RPM ;bucle de perdida de tiempo para que el motor alcance las revoluciones necesarias.
    ;aqui hace un jr para que el ret de espera_FDC_O_motor_rpm le lleve al call original
 
+
+;----------------------------------------------------------------------------------------
 .termina_comando_SEEK
 ;los comandos RECALIBRATE y SEEK no devuelve bytes de resultado directamente
 ;es decir NO TIENEN "EXECUTION-PHASE" ni "RESULT-PHASE"
@@ -279,7 +314,7 @@ jr z,espera_FDC_listo ;comprueba que el FDC esta listo para recibir o mandar dat
 ld hl,l02e3
 inc hl
 ld a,(hl) ;a siempre toma valor &8
-          ;entiendo que es comando SENSE INTERRUPT STATUS
+          ;&8 es el comando SENSE INTERRUPT STATUS
 
 inc bc ;nos movemos a Data Register del FDC
 out (c),a ;mandamos el comando SENSE INTERRUPT STATUS
@@ -370,6 +405,7 @@ ld hl,comando_parametros_READ_DATA ;siguiente comando a mandar al FDC, comando R
             ;MT=0 (usamos FDD con solo una cabeza lectora)
             ;MF=1 (usamos MFM format)
             ;SK=0 (Skip Deleted Data Address Mark)
+            ;etc...
 
 call manda_orden_al_FDC
 
@@ -489,9 +525,9 @@ jr z,lee_sectores ;si hubo error no actualiza puntero de cantidad de bytes a esc
 
 .todo_correcto
 ld de,(cantidad_bytes_restantes_leer) ;si DE=#0000, en el ret de aqui abajo,
-                                          ;al volver a la rutina que llamo a esta subrutina
-                                          ;la comprobacion de que se acabo la lectura se activara.
-                                          ;apagara el motor de la disquetera y saltara al programa cargado.
+                                      ;al volver a la rutina que llamo a esta subrutina
+                                      ;la comprobacion de que se acabo la lectura se activara.
+                                      ;apagara el motor de la disquetera y saltara al programa cargado.
 
 ld (cantidad_bytes_quedan_por_intentar_leer),de ;actualiza contador de bytes a escribir y,
                                                     ;volvera a la rutina que llamo a esta subrutina
@@ -533,10 +569,14 @@ ld a,#9c
 ld bc,#7f00 
 out (c),a  ;pone Mode 0, lower ROM disabled, upper ROM disabled
 ld bc,#bc0c ;Selecciona registro 12 del CRTC (Start Address High Register)
+            ;en cada iteracion del bucle seleccionara diferentes registros
+
 out (c),c
 ld a,#30 ;fija la direccion de memoria de video del cpc
 inc b ;&BD puerto CRTC para escribir dato del registro seleccionado anteriormente
 out (c),a ;pone valor #30 en registro 12 del CRTC
+          ;en cada iteracion pondra valores diferentes a los registros selecionados
+
 dec b ;&BC puerto CRTC para seleccionar registro a escribir
 ld c,#0d ;selecciona registro 13 del CRTC (Start Address Low Register)
 out (c),c
@@ -568,6 +608,13 @@ db #FF ;comprobacion de fin de envio de datos al CRTC
 
 .pon_colorines
 ;elige el color del pen al reves, desde el 15 al 0
+;NOTA PARA PRINCIPIANTES
+;si el firmware del CPC esta activo (con un comando ei y el firmware no ha sido sobreescrito)
+;aunque cambiemos aqui los colores directamente al hardware
+;el propio firmware del cpc volvera a sobreescribirlos con los colores estandard del cpc
+;o los definidos con pen, ink en basic.
+
+
 ld b,#10 ;numero colores (16)
 ld hl,datos_colores ;direccion de ram donde estan los colores a poner
 
