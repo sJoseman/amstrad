@@ -33,7 +33,7 @@
 
 ;empecemos
 
-org #0100 ;todos los programas que se arracan con |cpm empiezan en esta direccion de memoria
+org #0100 ;todos los programas que se arrancan con |cpm empiezan en esta direccion de memoria
 run $
 
 di ;deshabilita interrupciones,
