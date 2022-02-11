@@ -292,7 +292,7 @@ jr nz,perdemos_tiempo
 
 jr guarda_status_registers
 
-;.l01d6
+
 .mueve_cabezal_track_destino
 ld hl,track_fisico_fdd
 sub (hl) ;a= track al que ir, (hl) track anterior leido
