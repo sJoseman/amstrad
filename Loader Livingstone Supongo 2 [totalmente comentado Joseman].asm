@@ -290,7 +290,7 @@ dec a
 nop
 jr nz,perdemos_tiempo
 
-jr guarda_status_registers ;el ret de la subrutina a la que llamamos
+jr guarda_status_registers ;el ret de la subrutina a la que saltamos
                            ;nos devolvera a la que llamo a esta.
 
 ;-------------------------------------------------------------------
