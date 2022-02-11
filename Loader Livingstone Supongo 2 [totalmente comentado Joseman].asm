@@ -535,15 +535,17 @@ out (c),a  ;pone Mode 0, lower ROM disabled, upper ROM disabled
 ld bc,#bc0c ;Selecciona registro 12 del CRTC (Start Address High Register)
 out (c),c
 ld a,#30 ;fija la direccion de memoria de video del cpc
-inc b
+inc b ;&BD puerto CRTC para escribir dato del registro seleccionado anteriormente
 out (c),a ;pone valor #30 en registro 12 del CRTC
-dec b
+dec b ;&BC puerto CRTC para seleccionar registro a escribir
 ld c,#0d ;selecciona registro 13 del CRTC (Start Address Low Register)
 out (c),c
-inc b
+inc b ;&BD puerto CRTC para escribir dato del registro seleccionado anteriormente
 xor a
 out (c),a ;pone #valor 00 en el registro 13 del CRTC
+;acabo de configurar CRT
 
+;ahora borra la pantalla haciendo un ldir con valor &00 a toda la memoria de video del cpc #C000-&FFFF
 ld hl,#c000 ;direccion de pantalla
 ld de,#c001
 ld (hl),#00
@@ -562,6 +564,7 @@ db #07 ;registro 7 del CRTC
 db #1E ;dato a meter en el registro 7 del CRTC
 db #FF ;comprobacion de fin de envio de datos al CRTC
 
+;-------------------------------------------------------------------------------------
 
 .pon_colorines
 ;elige el color del pen al reves, desde el 15 al 0
@@ -581,7 +584,12 @@ pop bc ;recupera contador de colores
 inc hl ;incrementa puntero a siguiente color
 djnz bucle_colores ;pone todos los colores
 ret
+;---------------------------------------------------------
 
+;zona de datos del programa
+;parametros del FDC
+;colores de pantalla
+;etc
 
 .comando_parametros_READ_DATA
 db #09 ;numero de comandos a mandar al FDC
