@@ -1,5 +1,6 @@
 ;Menu de seleccion de fase a cargar Livingstone Supongo II
 ;Joseman Febrero-Marzo 2022
+;No uso acentos ya que winape los convierte en codigo ascii de CPC
  
 
 
@@ -628,7 +629,7 @@ cp &0a ;&0a=10 decimal, numero de lineas totales que escanea del teclado
 jr nz,escanea_lineas_teclado ;si no hemos escaneado todas las lineas sigue escaneando
 
 ;por aqui hemos escaneado todas las lineas de teclado y guardado en el buffer las posibles pulsaciones
-pop bc ;rcupera puerto de control del PPI
+pop bc ;recupera puerto de control del PPI
 ld a,&0082 ;%10000010 ;If Bit 7 is "1" then the other bits will initialize Port A-B as Input or Output
            ;bit 4=0  PPI PORT A OUTPUT mode
 out (c),a ;configura PPI
