@@ -265,6 +265,7 @@ db &c7
 db &13 
 db &0a 
 
+;---------------------------------------------------------------------------------------------
 
 .pinta_sprites_menu
 ld ix,datos_posicion_sprite
@@ -972,7 +973,7 @@ call &0116 ;reusa el loader original que cargo este mismo menu
 ;ha leido del track 40 sector &08 la cantidad de 1.554 bytes
 ;las ha escrito en las posiciones de memoria &B9EE-&BFFF
 
-;ahor cargara mas datos desde disco...
+;ahora cargara mas datos desde disco...
 .l0612 equ $ + 3
 ld ix,datos_formato_disco_anticopia2
 ld a,&28 ;track 40 otra vez
